@@ -1,3 +1,5 @@
+require "byebug"
+
 # Write a method, all_vowel_pairs, that takes in an array of words and returns all pairs of words
 # that contain every vowel. Vowels are the letters a, e, i, o, u. A pair should have its two words
 # in the same order as the original array. 
@@ -6,9 +8,26 @@
 #
 # all_vowel_pairs(["goat", "action", "tear", "impromptu", "tired", "europe"])   # => ["action europe", "tear impromptu"]
 def all_vowel_pairs(words)
+  vowels = "aeiou"
+  pairs = []
+  words.each_with_index do |word, idx|
+    (idx...words.length - 1).each do |i|
+        pairs << "#{word} #{words[i + 1]}"
+    end
+  end
 
+  vowel_pairs = []
+  pairs.each do |str|
+    all_match = true
+    vowels.each_char do |vowel|
+        if !str.include?(vowel)
+            all_match = false
+        end
+    end
+    vowel_pairs << str if all_match
+  end
+  vowel_pairs
 end
-
 
 # Write a method, composite?, that takes in a number and returns a boolean indicating if the number
 # has factors besides 1 and itself
@@ -18,9 +37,9 @@ end
 # composite?(9)     # => true
 # composite?(13)    # => false
 def composite?(num)
-
+    return true if num < 2
+    (2..num / 2).any? {|i| return true if num % i == 0}
 end
-
 
 # A bigram is a string containing two letters.
 # Write a method, find_bigrams, that takes in a string and an array of bigrams.
@@ -32,7 +51,7 @@ end
 # find_bigrams("the theater is empty", ["cy", "em", "ty", "ea", "oo"])  # => ["em", "ty", "ea"]
 # find_bigrams("to the moon and back", ["ck", "oo", "ha", "at"])        # => ["ck", "oo"]
 def find_bigrams(str, bigrams)
-
+    bigrams.select {|el| str.include?(el)}
 end
 
 class Hash
@@ -50,9 +69,16 @@ class Hash
     # hash_2.my_select { |k, v| k + 1 == v }      # => {10=>11, 5=>6, 7=>8})
     # hash_2.my_select                            # => {4=>4}
     def my_select(&prc)
+        prc ||= Proc.new {|k, v| k == v}
+        new_hash = {}
+        self.each do |k, v|
+            new_hash[k] = v if prc.call(k, v)
+        end
 
+        new_hash
     end
 end
+
 
 class String
     # Write a method, String#substrings, that takes in a optional length argument
@@ -64,7 +90,21 @@ class String
     # "cats".substrings     # => ["c", "ca", "cat", "cats", "a", "at", "ats", "t", "ts", "s"]
     # "cats".substrings(2)  # => ["ca", "at", "ts"]
     def substrings(length = nil)
+        sub = []
+        self.each_char.with_index do |char1, idx1|
+            sub << char1
+            self.each_char.with_index do |char2, idx2|
+                if idx2 > idx1 
+                    sub << self[idx1..idx2]
+                end
+            end
+        end
 
+        if length
+           return sub.select {|el| el.length == length}
+        else
+            return sub
+        end
     end
 
 
@@ -78,6 +118,16 @@ class String
     # "bootcamp".caesar_cipher(2) #=> "dqqvecor"
     # "zebra".caesar_cipher(4)    #=> "difve"
     def caesar_cipher(num)
+        alpha = 'abcdefghijklmnopqrstuvwxyz'
+        hash = Hash.new(0)
 
+        alpha.each_char.with_index do |char, idx|
+            hash[char] = alpha[(idx + num) % 26]
+        end
+
+        cipher = ""
+        self.each_char {|char| cipher += hash[char]}
+
+        cipher
     end
 end
